@@ -6,3 +6,11 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
+model Dish {
+  id            String  @id @default(uuid())
+  name          String  @unique
+  description   String
+  contains_milk Boolean
+  contains_meat Boolean
+}
