@@ -17,7 +17,7 @@ export class DishController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: number, @Body() data: Dish) {
+  async update(@Param('id') id: string, @Body() data: Dish) {
     return this.dishService.update(id, data)
   }
 }
