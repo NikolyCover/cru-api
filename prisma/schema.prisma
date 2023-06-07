@@ -12,7 +12,7 @@ datasource db {
 
 enum Category {
   PROTEIN
-  SIDE_DISHE
+  SIDE_DISH
   SALAD
   DESSERT
   DRINK
