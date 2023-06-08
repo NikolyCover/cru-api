@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -16,8 +19,8 @@ enum Category {
 }
 
 model Dish {
-  id            String     @id @default(uuid())
-  name          String     //@unique
+  id            Int        @id @default(autoincrement())
+  name          String     @unique
   description   String?
   contains_milk Boolean
   contains_meat Boolean
@@ -26,22 +29,22 @@ model Dish {
 }
 
 model Menu {
-  id       String     @id @default(uuid())
+  id       Int        @id @default(autoincrement())
   date     DateTime
   DishMenu DishMenu[]
-  week_id  String
-  week     Week       @relation(fields: [week_id], references: [id])
+  week_id Int
+  week Week @relation(fields: [week_id], references: [id])
 }
 
 model DishMenu {
-  id      String @id @default(uuid())
-  id_dish String
-  dish    Dish   @relation(fields: [id_dish], references: [id])
-  id_Menu String
-  menu    Menu   @relation(fields: [id_Menu], references: [id])
+  id      Int  @id @default(autoincrement())
+  id_dish Int
+  dish    Dish @relation(fields: [id_dish], references: [id])
+  id_Menu Int
+  menu    Menu @relation(fields: [id_Menu], references: [id])
 }
 
 model Week {
-  id    String @id @default(uuid())
+  id Int @id @default(autoincrement())
   menus Menu[]
 }

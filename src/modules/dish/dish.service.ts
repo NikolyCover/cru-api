@@ -27,7 +27,7 @@ export class DishService {
     return this.prisma.dish.findMany()
   }
 
-  async update(id: string, data: Dish) {
+  async update(id: number, data: Dish) {
     const dishExists = await this.prisma.dish.findUnique({
       where: {
         id,
