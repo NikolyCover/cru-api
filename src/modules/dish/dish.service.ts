@@ -6,6 +6,18 @@ import { PrismaService } from 'src/database/prisma.service'
 export class DishService {
   constructor(private prisma: PrismaService) {}
 
+  async checkIfDishExists(id: number) {
+    const dishExists = await this.prisma.dish.findUnique({
+      where: {
+        id,
+      },
+    })
+
+    if (!dishExists) {
+      throw new Error('O prato não existe!')
+    }
+  }
+
   async create(data: Dish) {
     const dishExists = await this.prisma.dish.findFirst({
       where: {
@@ -27,22 +39,28 @@ export class DishService {
     return this.prisma.dish.findMany()
   }
 
-  async update(id: number, data: Dish) {
-    const dishExists = await this.prisma.dish.findUnique({
-      where: {
-        id,
-      },
-    })
+  async find(id: number) {
+    this.checkIfDishExists(id)
 
-    if (!dishExists) {
-      throw new Error('O prato não existe!')
-    }
+    return await this.prisma.dish.findUnique({
+      where: { id },
+    })
+  }
+
+  async update(id: number, data: Dish) {
+    this.checkIfDishExists(id)
 
     return await this.prisma.dish.update({
       data,
-      where: {
-        id,
-      },
+      where: { id },
+    })
+  }
+
+  async delete(id: number) {
+    this.checkIfDishExists(id)
+
+    return await this.prisma.dish.delete({
+      where: { id },
     })
   }
 }
