@@ -46,5 +46,6 @@ model DishMenu {
 
 model Week {
   id    Int    @id @default(autoincrement())
+  sunday DateTime
   menus Menu[]
 }

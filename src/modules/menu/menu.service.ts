@@ -1,36 +1,62 @@
 import { Injectable } from '@nestjs/common'
-import { Menu } from '@prisma/client'
 import { PrismaService } from 'src/database/prisma.service'
+import { WeekDay } from 'src/types/week-day'
+import { addDays } from 'src/utils/add-days'
+import { WeekService } from '../week/week.service'
+import { Menu } from '@prisma/client'
+import { DishService } from '../dish/dish.service'
 
 @Injectable()
 export class MenuService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly weekService: WeekService,
+    private readonly dishService: DishService,
+  ) {}
 
-  async checkIfMenuExists(id: number) {
+  async checkIfMenuExists(date: Date) {
     const menuExists = await this.prisma.menu.findUnique({
-      where: {
-        id,
-      },
+      where: { date },
     })
 
     if (!menuExists) {
-      throw new Error('O menu não existe!')
+      throw new Error('O cardápio não existe!')
     }
   }
 
-  async create(data: Menu) {
-    const menuExists = await this.prisma.menu.findFirst({
-      where: {
-        date: data.date,
+  async create(weekId: number, weekDay: WeekDay, dishesIds: number[]) {
+    //verify if already exists this weekDay at the week
+    const week = await this.weekService.find(weekId)
+    const date = addDays(week.sunday, weekDay)
+
+    const menu: Menu = await this.prisma.menu.create({
+      data: {
+        date,
+        week_id: weekId,
       },
     })
 
-    if (menuExists) {
-      throw new Error('Já existe um cardárpio cadastrado para esse dia')
-    }
-
-    return await this.prisma.menu.create({
-      data,
+    //verify if the dishesId are okay
+    const dishes = dishesIds.map(async (dishId) => {
+      return await this.dishService.find(dishId)
     })
+
+    dishesIds.map(
+      async (dishId) =>
+        await this.prisma.dishMenu.create({
+          data: {
+            id_Menu: menu.id,
+            id_dish: dishId,
+          },
+        }),
+    )
+
+    return {
+      id: menu.id,
+      date: menu.date,
+      week,
+      dishes,
+    }
   }
+
 }

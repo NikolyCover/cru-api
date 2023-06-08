@@ -29,10 +29,9 @@ export class DishService {
       throw new Error('Já existe um prato cadastrado com esse nome')
     }
 
-    const dish = await this.prisma.dish.create({
+    return await this.prisma.dish.create({
       data,
     })
-    return dish
   }
 
   async findAll() {

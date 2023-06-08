@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
 import { WeekService } from './week.service'
 import { Week } from '@prisma/client'
 
-@Controller('week')
+@Controller('weeks')
 export class WeekController {
   constructor(private readonly weekService: WeekService) {}
 
