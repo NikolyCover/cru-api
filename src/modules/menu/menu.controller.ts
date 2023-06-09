@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common'
 import { MenuService } from './menu.service'
 import { Menu } from '@prisma/client'
 import { WeekDay } from 'src/types/week-day'
@@ -23,10 +23,10 @@ export class MenuController {
     return this.menuService.find(new Date(date))
   }
 
-  // @Put(':id')
-  // update(@Param('id') id: number, @Body() data: Menu) {
-  //   return this.menuService.update(+id, data)
-  // }
+  @Put(':id')
+  update(@Param('id') id: number, @Body() data: MenuParamns) {
+    return this.menuService.update(+id, data.dishes_ids)
+  }
 
   // @Delete(':id')
   // delete(@Param('id') id: string) {

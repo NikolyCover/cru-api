@@ -36,20 +36,9 @@ export class MenuService {
       },
     })
 
-    //verify if the dishesId are okay
-    const dishes = dishesIds.map(async (dishId) => {
-      return await this.dishService.find(dishId)
-    })
+    this.createDishMenus(menu.id, dishesIds)
 
-    dishesIds.map(
-      async (dishId) =>
-        await this.prisma.dishMenu.create({
-          data: {
-            id_Menu: menu.id,
-            id_dish: dishId,
-          },
-        }),
-    )
+    const dishes = await this.getDishesFromIds(dishesIds)
 
     return {
       id: menu.id,
@@ -68,15 +57,23 @@ export class MenuService {
 
     const week = await this.weekService.find(menu.week_id)
 
-    const dishPromises = (await this.prisma.dishMenu.findMany()).map(
-      async (dishMenu) => {
-        if (dishMenu.id_Menu == menu.id) {
-          return await this.dishService.find(dishMenu.id_dish)
-        }
-      },
-    )
+    // const dishPromises = (await this.prisma.dishMenu.findMany()).map(
+    //   async (dishMenu) => {
+    //     if (dishMenu.id_Menu == menu.id) {
+    //       return await this.dishService.find(dishMenu.id_dish)
+    //     }
+    //   },
+    // )
 
-    const dishes = await Promise.all(dishPromises)
+    const dishMenus = await this.prisma.dishMenu.findMany({
+      where: {
+        id_Menu: menu.id,
+      },
+    })
+
+    const dishesIds = dishMenus.map((dishMenu) => dishMenu.id_dish)
+
+    const dishes = await this.getDishesFromIds(dishesIds)
 
     return {
       id: menu.id,
@@ -84,5 +81,51 @@ export class MenuService {
       week,
       dishes,
     }
+  }
+
+  async update(id: number, dishesIds: number[]) {
+    const menu = await this.prisma.menu.findUnique({
+      where: { id },
+    })
+
+    await this.deleteDishMenus(id)
+    this.createDishMenus(id, dishesIds)
+    const dishes = await this.getDishesFromIds(dishesIds)
+
+    const week = await this.weekService.find(menu.week_id)
+
+    return {
+      id,
+      date: menu.date,
+      week,
+      dishes,
+    }
+  }
+
+  createDishMenus(menuId: number, dishesIds: number[]) {
+    //verify if the dishesId are okay
+    dishesIds.map(
+      async (dishId) =>
+        await this.prisma.dishMenu.create({
+          data: {
+            id_Menu: menuId,
+            id_dish: dishId,
+          },
+        }),
+    )
+  }
+
+  async getDishesFromIds(dishesIds: number[]) {
+    const dishPromises = dishesIds.map(async (dishId) => {
+      return await this.dishService.find(dishId)
+    })
+
+    return await Promise.all(dishPromises)
+  }
+
+  async deleteDishMenus(menuId: number) {
+    return await this.prisma.dishMenu.deleteMany({
+      where: { id_Menu: menuId },
+    })
   }
 }
