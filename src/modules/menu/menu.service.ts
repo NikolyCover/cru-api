@@ -102,6 +102,13 @@ export class MenuService {
     }
   }
 
+  async delete(id: number) {
+    this.deleteDishMenus(id)
+    return this.prisma.menu.delete({
+      where: { id },
+    })
+  }
+
   createDishMenus(menuId: number, dishesIds: number[]) {
     //verify if the dishesId are okay
     dishesIds.map(
