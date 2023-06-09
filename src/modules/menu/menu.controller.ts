@@ -18,10 +18,10 @@ export class MenuController {
     return this.menuService.create(data.week_id, data.week_day, data.dishes_ids)
   }
 
-  // @Get(':id')
-  // find(@Param('id') id: number) {
-  //   return this.menuService.find(+id)
-  // }
+  @Get(':date')
+  find(@Param('date') date: string) {
+    return this.menuService.find(new Date(date))
+  }
 
   // @Put(':id')
   // update(@Param('id') id: number, @Body() data: Menu) {

@@ -20,7 +20,10 @@ export class WeekService {
 
   async create(data: Week) {
     return await this.prisma.week.create({
-      data,
+      data: {
+        ...data,
+        sunday: new Date(data.sunday),
+      },
     })
   }
 

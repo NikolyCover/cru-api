@@ -59,4 +59,30 @@ export class MenuService {
     }
   }
 
+  async find(date: Date) {
+    this.checkIfMenuExists(date)
+
+    const menu = await this.prisma.menu.findUnique({
+      where: { date },
+    })
+
+    const week = await this.weekService.find(menu.week_id)
+
+    const dishPromises = (await this.prisma.dishMenu.findMany()).map(
+      async (dishMenu) => {
+        if (dishMenu.id_Menu == menu.id) {
+          return await this.dishService.find(dishMenu.id_dish)
+        }
+      },
+    )
+
+    const dishes = await Promise.all(dishPromises)
+
+    return {
+      id: menu.id,
+      date: menu.date,
+      week,
+      dishes,
+    }
+  }
 }
