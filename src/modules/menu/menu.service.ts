@@ -14,14 +14,15 @@ export class MenuService {
     private readonly dishService: DishService,
   ) {}
 
-  async checkIfMenuExists(date: Date) {
+  async menuExists(date: Date) {
     const menuExists = await this.prisma.menu.findUnique({
       where: { date },
     })
 
     if (!menuExists) {
-      throw new Error('O cardápio não existe!')
+      //throw new Error('O cardápio não existe!')
     }
+    return !!menuExists
   }
 
   async create(weekId: number, weekDay: WeekDay, dishesIds: number[]) {
@@ -49,21 +50,15 @@ export class MenuService {
   }
 
   async find(date: Date) {
-    this.checkIfMenuExists(date)
+    if (this.menuExists(date)) {
+      return null
+    }
 
     const menu = await this.prisma.menu.findUnique({
       where: { date },
     })
 
     const week = await this.weekService.find(menu.week_id)
-
-    // const dishPromises = (await this.prisma.dishMenu.findMany()).map(
-    //   async (dishMenu) => {
-    //     if (dishMenu.id_Menu == menu.id) {
-    //       return await this.dishService.find(dishMenu.id_dish)
-    //     }
-    //   },
-    // )
 
     const dishMenus = await this.prisma.dishMenu.findMany({
       where: {

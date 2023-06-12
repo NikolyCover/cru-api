@@ -16,6 +16,11 @@ export class WeekController {
     return this.weekService.findAll()
   }
 
+  @Get('current')
+  findCurrent() {
+    return this.weekService.findCurent()
+  }
+
   @Get(':id')
   find(@Param('id') id: number) {
     return this.weekService.find(+id)
