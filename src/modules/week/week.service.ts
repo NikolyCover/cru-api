@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common'
 import { Week } from '@prisma/client'
 import { PrismaService } from 'src/database/prisma.service'
+import { MenuService } from '../menu/menu.service'
 
 @Injectable()
 export class WeekService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly menuService: MenuService,
+  ) {}
 
   async checkIfWeekExists(id: number) {
     const weekExists = await this.prisma.week.findUnique({
@@ -41,14 +45,17 @@ export class WeekService {
 
     const week = weeks.find((week) => week.sunday.getTime() == sunday.getTime())
 
-    // const menus = []
+    const menus = []
 
-    // for (let i = 0; i < 7; i++) {
-    //   menus.push(this.menuService.find(sunday.setDate(sunday.getDate() - )))
-    // }
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(sunday)
+      date.setDate(date.getDate() + i)
+      menus.push(await this.menuService.find(date))
+    }
 
     return {
       ...week,
+      menus,
     }
   }
 

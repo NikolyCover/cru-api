@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/database/prisma.service'
 import { WeekDay } from 'src/types/week-day'
 import { addDays } from 'src/utils/add-days'
-import { WeekService } from '../week/week.service'
 import { Menu } from '@prisma/client'
 import { DishService } from '../dish/dish.service'
 
@@ -10,7 +9,6 @@ import { DishService } from '../dish/dish.service'
 export class MenuService {
   constructor(
     private prisma: PrismaService,
-    private readonly weekService: WeekService,
     private readonly dishService: DishService,
   ) {}
 
@@ -20,14 +18,18 @@ export class MenuService {
     })
 
     if (!menuExists) {
+      return false
       //throw new Error('O cardápio não existe!')
     }
-    return !!menuExists
+    return true
   }
 
   async create(weekId: number, weekDay: WeekDay, dishesIds: number[]) {
     //verify if already exists this weekDay at the week
-    const week = await this.weekService.find(weekId)
+    const week = await this.prisma.week.findUnique({
+      where: { id: weekId },
+    })
+
     const date = addDays(week.sunday, weekDay)
 
     const menu: Menu = await this.prisma.menu.create({
@@ -50,15 +52,16 @@ export class MenuService {
   }
 
   async find(date: Date) {
-    if (this.menuExists(date)) {
+    if (!(await this.menuExists(date))) {
       return null
     }
-
     const menu = await this.prisma.menu.findUnique({
       where: { date },
     })
 
-    const week = await this.weekService.find(menu.week_id)
+    const week = await this.prisma.week.findUnique({
+      where: { id: menu.week_id },
+    })
 
     const dishMenus = await this.prisma.dishMenu.findMany({
       where: {
@@ -87,7 +90,9 @@ export class MenuService {
     this.createDishMenus(id, dishesIds)
     const dishes = await this.getDishesFromIds(dishesIds)
 
-    const week = await this.weekService.find(menu.week_id)
+    const week = await this.prisma.week.findUnique({
+      where: { id: menu.week_id },
+    })
 
     return {
       id,
