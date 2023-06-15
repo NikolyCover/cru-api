@@ -37,7 +37,6 @@ export class WeekService {
 
   async findCurent() {
     const today = new Date()
-    console.log(today.getDay())
     const sunday = new Date(today.setDate(today.getDate() - today.getDay()))
     sunday.setHours(0, 0, 0, 0)
 

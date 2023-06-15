@@ -4,6 +4,7 @@ import { WeekDay } from 'src/types/week-day'
 import { addDays } from 'src/utils/add-days'
 import { Menu } from '@prisma/client'
 import { DishService } from '../dish/dish.service'
+import { organizeDishes } from 'src/utils/organizeDishes'
 
 @Injectable()
 export class MenuService {
@@ -72,12 +73,13 @@ export class MenuService {
     const dishesIds = dishMenus.map((dishMenu) => dishMenu.id_dish)
 
     const dishes = await this.getDishesFromIds(dishesIds)
+    const organizedDishes = organizeDishes(dishes)
 
     return {
       id: menu.id,
       date: menu.date,
       week,
-      dishes,
+      organizedDishes,
     }
   }
 
