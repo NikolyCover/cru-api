@@ -32,7 +32,20 @@ export class WeekService {
   }
 
   async findAll() {
-    return this.prisma.week.findMany()
+    const weeksWithousMenu = await this.prisma.week.findMany()
+
+    const weeks = await Promise.all(
+      weeksWithousMenu.map(async (week) => {
+        const menus = await this.getMenusBySunday(week.sunday)
+
+        return {
+          ...week,
+          menus,
+        }
+      }),
+    )
+
+    return weeks
   }
 
   async findCurent() {
@@ -40,17 +53,11 @@ export class WeekService {
     const sunday = new Date(today.setDate(today.getDate() - today.getDay()))
     sunday.setHours(0, 0, 0, 0)
 
-    const weeks = await this.findAll()
+    const weeks = await this.prisma.week.findMany()
 
     const week = weeks.find((week) => week.sunday.getTime() == sunday.getTime())
 
-    const menus = []
-
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(sunday)
-      date.setDate(date.getDate() + i)
-      menus.push(await this.menuService.find(date))
-    }
+    const menus = await this.getMenusBySunday(sunday)
 
     return {
       ...week,
@@ -61,9 +68,16 @@ export class WeekService {
   async find(id: number) {
     this.checkIfWeekExists(id)
 
-    return await this.prisma.week.findUnique({
+    const week = await this.prisma.week.findUnique({
       where: { id },
     })
+
+    const menus = await this.getMenusBySunday(week.sunday)
+
+    return {
+      ...week,
+      menus,
+    }
   }
 
   async update(id: number, data: Week) {
@@ -81,5 +95,17 @@ export class WeekService {
     return await this.prisma.week.delete({
       where: { id },
     })
+  }
+
+  getMenusBySunday = async (sunday: Date) => {
+    const menus = []
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(sunday)
+      date.setDate(date.getDate() + i)
+      menus.push(await this.menuService.find(date))
+    }
+
+    return menus
   }
 }
