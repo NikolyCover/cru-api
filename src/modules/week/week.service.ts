@@ -57,7 +57,13 @@ export class WeekService {
 
     const week = weeks.find((week) => week.sunday.getTime() == sunday.getTime())
 
+    if (!week) {
+      return null
+    }
+
     const menus = await this.getMenusBySunday(sunday)
+
+    // const thereIsAMenu = menus.find((menu) => menu) === undefined
 
     return {
       ...week,
