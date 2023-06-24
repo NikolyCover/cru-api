@@ -25,9 +25,9 @@ export class MenuController {
     return this.menuService.findAll()
   }
 
-  @Get(':date')
-  find(@Param('date') date: string) {
-    return this.menuService.find(new Date(date))
+  @Get(':id')
+  find(@Param('id') id: string) {
+    return this.menuService.find(Number(id))
   }
 
   @Put(':id')

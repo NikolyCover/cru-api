@@ -41,12 +41,9 @@ export class MenuService {
     }
   }
 
-  async find(date: Date) {
-    if (!(await this.menuExists(date))) {
-      return null
-    }
+  async find(id: number) {
     const menu = await this.prisma.menu.findUnique({
-      where: { date },
+      where: { id },
     })
 
     const menuWithDishes = await this.getMenuWithDishes(menu)
