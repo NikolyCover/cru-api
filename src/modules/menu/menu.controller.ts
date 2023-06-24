@@ -16,8 +16,8 @@ export class MenuController {
   }
 
   @Get('current')
-  findCurrent(@Param('date') date: string) {
-    return this.menuService.find(new Date(date))
+  findCurrent() {
+    return this.menuService.findCurent()
   }
 
   @Get()

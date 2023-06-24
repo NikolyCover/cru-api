@@ -66,17 +66,19 @@ export class MenuService {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    const menu = this.prisma.menu.findUnique({
+    const menu = await this.prisma.menu.findUnique({
       where: {
         date: today,
       },
     })
 
+    const menuWithDishes = await this.getMenuWithDishes(menu)
+
     if (!menu) {
       return null
     }
 
-    return { menu }
+    return { ...menuWithDishes }
   }
 
   async update(id: number, dishesIds: number[]) {
