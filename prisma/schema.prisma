@@ -32,8 +32,6 @@ model Menu {
   id       Int        @id @default(autoincrement())
   date     DateTime   @unique
   DishMenu DishMenu[]
-  week_id  Int
-  week     Week       @relation(fields: [week_id], references: [id])
 }
 
 model DishMenu {
@@ -42,10 +40,4 @@ model DishMenu {
   dish    Dish @relation(fields: [id_dish], references: [id])
   id_Menu Int
   menu    Menu @relation(fields: [id_Menu], references: [id])
-}
-
-model Week {
-  id    Int    @id @default(autoincrement())
-  sunday DateTime
-  menus Menu[]
 }

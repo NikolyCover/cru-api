@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/database/prisma.service'
-import { WeekDay } from 'src/types/week-day'
-import { addDays } from 'src/utils/add-days'
 import { Menu } from '@prisma/client'
 import { DishService } from '../dish/dish.service'
 import { organizeDishes } from 'src/utils/organizeDishes'
@@ -25,18 +23,10 @@ export class MenuService {
     return true
   }
 
-  async create(weekId: number, weekDay: WeekDay, dishesIds: number[]) {
-    //verify if already exists this weekDay at the week
-    const week = await this.prisma.week.findUnique({
-      where: { id: weekId },
-    })
-
-    const date = addDays(week.sunday, weekDay)
-
+  async create(date: Date, dishesIds: number[]) {
     const menu: Menu = await this.prisma.menu.create({
       data: {
         date,
-        week_id: weekId,
       },
     })
 
@@ -47,7 +37,6 @@ export class MenuService {
     return {
       id: menu.id,
       date: menu.date,
-      week,
       dishes,
     }
   }
@@ -60,10 +49,60 @@ export class MenuService {
       where: { date },
     })
 
-    const week = await this.prisma.week.findUnique({
-      where: { id: menu.week_id },
+    const menuWithDishes = await this.getMenuWithDishes(menu)
+
+    return { ...menuWithDishes }
+  }
+
+  async findAll() {
+    const menus = await this.prisma.menu.findMany()
+
+    const menusWithDishes = menus.map((menu) => this.getMenuWithDishes(menu))
+
+    return await Promise.all(menusWithDishes)
+  }
+
+  async findCurent() {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const menu = this.prisma.menu.findUnique({
+      where: {
+        date: today,
+      },
     })
 
+    if (!menu) {
+      return null
+    }
+
+    return { menu }
+  }
+
+  async update(id: number, dishesIds: number[]) {
+    const menu = await this.prisma.menu.findUnique({
+      where: { id },
+    })
+
+    await this.deleteDishMenus(id)
+    this.createDishMenus(id, dishesIds)
+    const dishes = await this.getDishesFromIds(dishesIds)
+
+    return {
+      id,
+      date: menu.date,
+      dishes,
+    }
+  }
+
+  async delete(id: number) {
+    this.deleteDishMenus(id)
+    return this.prisma.menu.delete({
+      where: { id },
+    })
+  }
+
+  async getMenuWithDishes(menu: Menu) {
     const dishMenus = await this.prisma.dishMenu.findMany({
       where: {
         id_Menu: menu.id,
@@ -78,37 +117,8 @@ export class MenuService {
     return {
       id: menu.id,
       date: menu.date,
-      week,
       organizedDishes,
     }
-  }
-
-  async update(id: number, dishesIds: number[]) {
-    const menu = await this.prisma.menu.findUnique({
-      where: { id },
-    })
-
-    await this.deleteDishMenus(id)
-    this.createDishMenus(id, dishesIds)
-    const dishes = await this.getDishesFromIds(dishesIds)
-
-    const week = await this.prisma.week.findUnique({
-      where: { id: menu.week_id },
-    })
-
-    return {
-      id,
-      date: menu.date,
-      week,
-      dishes,
-    }
-  }
-
-  async delete(id: number) {
-    this.deleteDishMenus(id)
-    return this.prisma.menu.delete({
-      where: { id },
-    })
   }
 
   createDishMenus(menuId: number, dishesIds: number[]) {
