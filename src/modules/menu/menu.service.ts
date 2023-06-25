@@ -69,11 +69,11 @@ export class MenuService {
       },
     })
 
-    const menuWithDishes = await this.getMenuWithDishes(menu)
-
     if (!menu) {
       return null
     }
+
+    const menuWithDishes = await this.getMenuWithDishes(menu)
 
     return { ...menuWithDishes }
   }
