@@ -22,8 +22,8 @@ model Dish {
   id            Int        @id @default(autoincrement())
   name          String     @unique
   description   String?
-  contains_milk Boolean
-  contains_meat Boolean
+  containsMilk Boolean @map("contains_milk")
+  containsMeat Boolean @map("contains_meat")
   category      Category
   DishMenu      DishMenu[]
 }
