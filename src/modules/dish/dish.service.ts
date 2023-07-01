@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { Dish } from '@prisma/client'
 import { PrismaService } from 'src/database/prisma.service'
 
@@ -26,7 +26,10 @@ export class DishService {
     })
 
     if (dishExists) {
-      throw new Error('Já existe um prato cadastrado com esse nome')
+      throw new HttpException(
+        'Já existe um prato cadastrado com esse nome',
+        HttpStatus.FORBIDDEN,
+      )
     }
 
     return await this.prisma.dish.create({
@@ -57,6 +60,19 @@ export class DishService {
 
   async delete(id: number) {
     this.checkIfDishExists(id)
+
+    const thereIsDishMenu = await this.prisma.dishMenu.findFirst({
+      where: {
+        id_dish: id,
+      },
+    })
+
+    if (thereIsDishMenu) {
+      throw new HttpException(
+        'Esse prato está cadastrado em um cardápio. Portanto, não pode ser apagado!',
+        HttpStatus.FORBIDDEN,
+      )
+    }
 
     return await this.prisma.dish.delete({
       where: { id },
