@@ -142,8 +142,32 @@ export class MenuService {
   }
 
   async deleteDishMenus(menuId: number) {
-    return await this.prisma.dishMenu.deleteMany({
-      where: { id_Menu: menuId },
-    })
+    const maxRetries = 3 // Maximum number of retries
+    let retries = 0
+
+    while (retries < maxRetries) {
+      try {
+        const result = await this.prisma.dishMenu.deleteMany({
+          where: { id_Menu: menuId },
+        })
+        return result
+      } catch (error) {
+        // Check if the error is due to a write conflict or deadlock
+        const isRetryableError =
+          error.code === 'P2002' || // Prisma error code for write conflict
+          error.code === 'P40001' // Prisma error code for deadlock
+
+        if (!isRetryableError) {
+          throw error // Throw the error if it's not retryable
+        }
+
+        retries++
+        if (retries < maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, 1000)) // Delay before retrying
+        } else {
+          throw error // Throw the error if the maximum number of retries is reached
+        }
+      }
+    }
   }
 }
