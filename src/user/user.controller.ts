@@ -1,4 +1,4 @@
-import { Body, Controller, Get } from '@nestjs/common'
+import { Body, Controller, Post } from '@nestjs/common'
 import { UserService } from './user.service'
 
 type UserParamns = {
@@ -10,7 +10,7 @@ type UserParamns = {
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get()
+  @Post()
   auth(@Body() data: UserParamns) {
     return this.userService.auth(data.username, data.password)
   }
